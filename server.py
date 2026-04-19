@@ -24,7 +24,7 @@ def handle_client(client):
             break
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-PORT = int(os.environ.get("PORT", 5555))
+PORT = int(os.environ.get("PORT", 8080))
 server.bind(("0.0.0.0", PORT))
 server.listen()
 
