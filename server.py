@@ -1,39 +1,15 @@
 import os
-import socket
-import threading
+from flask import Flask
+from flask_socketio import SocketIO, emit
 
+app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-clients = []
+@socketio.on('message')
+def handle_message(msg):
+    # بيبعت الرسالة لكل الناس ما عدا اللي بعتها
+    emit('message', msg, broadcast=True, include_self=False)
 
-def broadcast(msg, sender):
-    for client in clients:
-        if client != sender:
-            try:
-                client.send(msg)
-            except:
-                clients.remove(client)
-
-def handle_client(client):
-    while True:
-        try:
-            msg = client.recv(1024)
-            broadcast(msg, client)
-        except:
-            clients.remove(client)
-            client.close()
-            break
-
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-PORT = int(os.environ.get("PORT", 8080))
-server.bind(("0.0.0.0", PORT))
-server.listen()
-
-print("Server is running...")
-
-while True:
-    client, addr = server.accept()
-    print("Client connected:", addr)
-    clients.append(client)
-
-    thread = threading.Thread(target=handle_client, args=(client,))
-    thread.start()
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 8080))
+    socketio.run(app, host='0.0.0.0', port=port)
